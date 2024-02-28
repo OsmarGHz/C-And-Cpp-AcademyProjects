@@ -2,40 +2,52 @@
 #include <string.h>
 #define TAMAL 20
 
-int main(){
-    int inscritos[TAMAL], butacas[TAMAL];
-    int realmenteInscritos,aTiempo,tarde,i,j,k,temp,tempIt;
-    short error=0,coincidencia=0;
+short numeroInscripciones(){
+    short temp;
     printf("Cuantos alumnos hay inscritos? ");
-    scanf("%d",&realmenteInscritos);
+    scanf("%hd",&temp);
+    return temp;
+}
+
+void inscribirAlumnos(int insc[]){
+    short realmenteInscritos,i,j,temp,error;
+    realmenteInscritos=numeroInscripciones();
     i=0;
     while (i<realmenteInscritos){
         printf("Ingrese la matricula del alumno %d (entre 1010 y 1200)", i+1);
-        scanf("%d",&inscritos[i]);
-        if (inscritos[i]<1010 || inscritos[i]>1200){
+        scanf("%hd",&temp);
+        if (temp<1010 || temp>1200){
             printf("\n\t\t * Matricula incorrecta. Favor de ingresar otra.  *\n");
         }else{
             error=0;
             for (j = 0; j < i; j++){
-                if (inscritos[j]==inscritos[i]){
+                if (insc[j]==temp){
                     printf("\n\t\t * Matricula repetida. Favor de ingresar otra.  *\n");
                     error++;
                 }
             }
             if (error==0){
+                insc[i]=temp;
                 i++;
             }
         }
     }
+}
+
+short calculoAlumnosTiempo(){
+    short temp;
     do{
         printf("Cuantos alumnos llegaron a tiempo? ");
-        scanf("%d",&aTiempo);
-        if (aTiempo<0 || aTiempo>realmenteInscritos){
+        scanf("%d",&temp);
+        if (temp<0 || temp>realmenteInscritos){
             printf("Numero de alumnos incorrecto. Ingrese otra cantidad.");
         }
-    } while (aTiempo<0 || aTiempo>realmenteInscritos);
-    
-    
+    } while (temp<0 || temp>realmenteInscritos);
+}
+
+void alumnosTiempo(){
+    short aTiempo;
+    aTiempo=calculoAlumnosTiempo();
     i=0;
     while (i<aTiempo){
         printf("Ingrese la matricula del alumno %d (entre 1010 y 1200)", i+1);
@@ -67,6 +79,14 @@ int main(){
             }
         }
     }
+}
+
+int main(){
+    int inscritos[TAMAL], butacas[TAMAL];
+    //int realmenteInscritos,aTiempo,tarde,i,j,k,temp,tempIt;
+    //short error=0,coincidencia=0;
+    inscribirAlumnos(inscritos);
+    alumnosTiempo();
 
     do{
         printf("Cuantos alumnos llegaron TARDE? ");
@@ -136,5 +156,4 @@ int main(){
         }
         
     }
-    
 }
