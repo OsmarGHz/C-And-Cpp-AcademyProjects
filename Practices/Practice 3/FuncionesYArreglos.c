@@ -27,8 +27,15 @@ int main(){
             }
         }
     }
-    printf("Cuantos alumnos llegaron a tiempo? ");
-    scanf("%d",&aTiempo);
+    do{
+        printf("Cuantos alumnos llegaron a tiempo? ");
+        scanf("%d",&aTiempo);
+        if (aTiempo<0 || aTiempo>realmenteInscritos){
+            printf("Numero de alumnos incorrecto. Ingrese otra cantidad.");
+        }
+    } while (aTiempo<0 || aTiempo>realmenteInscritos);
+    
+    
     i=0;
     while (i<aTiempo){
         printf("Ingrese la matricula del alumno %d (entre 1010 y 1200)", i+1);
@@ -61,6 +68,14 @@ int main(){
         }
     }
 
+    do{
+        printf("Cuantos alumnos llegaron TARDE? ");
+        scanf("%d",&tarde);
+        if (tarde<0 || tarde>(realmenteInscritos-aTiempo)){
+            printf("Numero de alumnos incorrecto. Ingrese otra cantidad.");
+        }
+    } while (tarde<0 || tarde>(realmenteInscritos-aTiempo));
+    
     printf("Cuantos alumnos llegaron TARDE? ");
     scanf("%d",&tarde);
     while (i<(aTiempo+tarde)){
