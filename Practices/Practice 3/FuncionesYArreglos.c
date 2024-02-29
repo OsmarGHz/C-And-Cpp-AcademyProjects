@@ -41,6 +41,8 @@ short calculoAlumnosTiempo(){
         scanf("%d",&temp);
         if (temp<0 || temp>realmenteInscritos){
             printf("Numero de alumnos incorrecto. Ingrese otra cantidad.");
+        }else{
+            return temp;
         }
     } while (temp<0 || temp>realmenteInscritos);
 }
@@ -83,6 +85,7 @@ void alumnosTiempo(){
 
 int main(){
     int inscritos[TAMAL], butacas[TAMAL];
+    short rInscritos;
     //int realmenteInscritos,aTiempo,tarde,i,j,k,temp,tempIt;
     //short error=0,coincidencia=0;
     inscribirAlumnos(inscritos);
