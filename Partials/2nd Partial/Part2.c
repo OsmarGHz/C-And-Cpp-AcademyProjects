@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h> 
+#include <time.h>
+#include <malloc.h>
 #define N 2
 #define NUMPARCIALES 3
 
@@ -87,6 +89,18 @@ int validarMatricula(const char matricula[]) {
     return errors;
 }
 
+int validarMatriculaRepetida(const char matricula[], const struct alumno alu[], int index) {
+    int i;
+
+    for (i = 0; i < index; i++) {
+        if (strcmp(alu[i].matricula, matricula) == 0) {
+            printf("\n\t\t * La matricula ingresada ya existe para otro alumno *\n");
+            return 1; // Matrícula repetida encontrada
+        }
+    }
+    return 0; // No se encontraron matrículas repetidas
+}
+
 int validarCalificacion(float calificacion) {
     // Comprobamos si la calificacion esta dentro del rango permitido
     if (calificacion < 0.0 || calificacion > 10.0) {
@@ -112,11 +126,10 @@ int validarNumeroLista(int numeroLista) {
     return 0; // Sin errores
 }
 
-void leerAlumnos(struct alumno alu[], float calif[][NUMPARCIALES]){
-    int i,errores;
+void leerAlumnos(int i, struct alumno alu[]){
+    int errores=0;
     char c;
-    for (i = 0; i < N; i++){
-        do{
+    do{
             printf("Ingrese el nombre completo del alumno %d (Max. 50 caracteres): ", i+1);
             scanf(" %50[^\n]s", alu[i].nombreComp);
             errores=validarNombre(alu[i].nombreComp);
@@ -127,24 +140,33 @@ void leerAlumnos(struct alumno alu[], float calif[][NUMPARCIALES]){
             printf("Ingrese la matricula del alumno %d (10 caracteres): ", i+1);
             scanf(" %10[^\n]s", alu[i].matricula);
             errores = validarMatricula(alu[i].matricula); // Llamamos a la función validarMatricula
+            if (errores == 0) {
+                errores = validarMatriculaRepetida(alu[i].matricula, alu, i); // Llamamos a la función validarMatriculaRepetida
+                if (errores == 1) {
+                continue; // Volver a solicitar la matrícula
+                }
+            }
             while ((c = getchar()) != '\n' && c != EOF);
         } while (errores>0);
+}
 
-        do{
+void leerCalifAlumnos(int i, float calif[][NUMPARCIALES]){
+    int errores;
+    char c;
+    do{
             printf("Ingrese la 1ra calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
-            scanf(" %.1f", &calif[i][0]);
+            scanf(" %f", &calif[i][0]);
             errores = validarCalificacion(calif[i][0]); // Llamamos a la función validarCalificacion
             while ((c = getchar()) != '\n' && c != EOF);
         } while (errores>0);
 
         do{
             printf("Ingrese la 2da calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
-            scanf(" %.1f", &calif[i][1]);
+            scanf(" %f", &calif[i][1]);
             errores = validarCalificacion(calif[i][1]); // Llamamos a la misma función validarCalificacion
             while ((c = getchar()) != '\n' && c != EOF);
         } while (errores>0);
-    }
-    printf("Lectura hecha. Pasando al menu... \n");
+        
 }
 
 int validarTiempo(int hora, int minuto) {
@@ -162,6 +184,17 @@ int validarTiempo(int hora, int minuto) {
     return 0; // No hay errores
 }
 
+void horaActual(int *hora, int *minuto) {
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    *hora = timeinfo->tm_hour;
+    *minuto = timeinfo->tm_min;
+}
+
 
 void alumnoIniciaExamen(struct alumno alu[], float calif[][NUMPARCIALES], NODO **nodoRaiz){
     int horaTemp, minutoTemp, nListaTemp, errores=0;
@@ -174,12 +207,7 @@ void alumnoIniciaExamen(struct alumno alu[], float calif[][NUMPARCIALES], NODO *
         while ((c = getchar()) != '\n' && c != EOF);
     } while (errores>0);
 
-    do{
-        printf("Ingrese la hora y minuto en que inicio examen el alumno %d (formato 24 horas, ejemplo: 11 27): ", nListaTemp);
-        scanf(" %d %d", &horaTemp, &minutoTemp);
-        errores = validarTiempo(horaTemp, minutoTemp); // Llamamos a la función validarTiempo
-        while ((c = getchar()) != '\n' && c != EOF);
-    } while (errores>0);
+    horaActual(&horaTemp, &minutoTemp); // Llamamos a la funcion horaActual para obtener la hora y minutos actuales
 
     nuevo = crearNodo();
     if (nuevo == NULL) printf("\n\t\t * Lo sentimos, algo paso.  *\n");
@@ -193,7 +221,7 @@ void alumnoIniciaExamen(struct alumno alu[], float calif[][NUMPARCIALES], NODO *
         while (aux->siguiente != NULL){
             aux = aux->siguiente;
         }
-        aux->siguiente=nuevo;        
+        aux->siguiente=nuevo;
     }
 }
 
@@ -246,15 +274,21 @@ void resultadosFinales(){
 
 }
 
+void imprimirMenu() {
+    printf("\n\t\t * MENU PRINCIPAL *\n");
+    printf("\n\t 1. Agregar alumno que ingreso al examen");
+    printf("\n\t 2. Un alumno acaba de terminar su examen");
+    printf("\n\t 3. FINALIZAR PROGRAMA\n");
+    printf("\n Ingrese la opcion deseada: ");
+}
+
 void menuCiclado(struct alumno alu[], float calif[][NUMPARCIALES], NODO **nodoRaiz){
     int input;
+    printf("Lectura hecha. Pasando al menu... \n");
     do{
-        printf("\n\t\t * MENU PRINCIPAL *\n");
-        printf("\n\t 1. Agregar alumno que ingreso al examen");
-        printf("\n\t 2. Un alumno acaba de terminar su examen");
-        printf("\n\t 3. FINALIZAR PROGRAMA\n");
-        printf("\n Ingrese la letra de la opcion deseada: ");
+        imprimirMenu();
         scanf(" %d", &input);
+
         switch (input){
             case 1:
                 alumnoIniciaExamen(alu, calif, nodoRaiz);
@@ -266,18 +300,41 @@ void menuCiclado(struct alumno alu[], float calif[][NUMPARCIALES], NODO **nodoRa
                 resultadosFinales();
                 break;
             default:
-                printf("\n\t\t * Lo sentimos, input NO valido. Ingrese un numero del 1 al 3 *\n");
+                printf("\n\t\t * Input NO valido. Ingrese un numero del 1 al 3 *\n");
                 break;
         }
     } while (input != 3);
-    
+    }
+
+
+void leerMat(float mat[][NUMPARCIALES]){
+    int i;
+    for (i = 0; i < N; i++){
+        scanf(" %f",&mat[i][0]);
+        scanf(" %f",&mat[i][1]);
+        scanf(" %f",&mat[i][2]);
+        printf(" %f %f %f", mat[i][0], mat[i][1], mat[i][2]);
+    }
+}
+
+void escribirMat(float mat[][NUMPARCIALES]){
+    int i;
+    for (i = 0; i < N; i++){
+        printf(" %f %f %f", mat[i][0], mat[i][1], mat[i][2]);
+    }
 }
 
 int main(){
+    int i;
     float calificaciones[N][NUMPARCIALES];
+    /*leerMat(calificaciones);
+    escribirMat(calificaciones);*/
     ALUMNO alumnos[N];
     NODO *nodoRaiz = NULL;
 
-    leerAlumnos(alumnos, calificaciones);
+    for (i = 0; i < N; i++){
+        leerAlumnos(i, alumnos);
+        leerCalifAlumnos(i, calificaciones);
+    }
     menuCiclado(alumnos, calificaciones, &nodoRaiz);
 }
