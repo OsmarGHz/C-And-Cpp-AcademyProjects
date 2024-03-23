@@ -4,7 +4,13 @@
 #include <ctype.h> 
 #include <time.h>
 #include <malloc.h>
-#define N 2
+#define N 4
+
+/*
+Integrantes del equipo:
+++ Hernandez Prado Osmar Javier
+++ Lopez Momox Limhi Gerson
+*/
 
 typedef struct{
     int hora, minuto;
@@ -148,6 +154,8 @@ void leerAlumnos(int i, struct alumno alu[]){
             }
             while ((c = getchar()) != '\n' && c != EOF);
         } while (errores>0);
+
+        alu[i].minutosTardados=0;
 }
 
 void leerCalifAlumnos(int i, float calif[][3]){
@@ -212,24 +220,39 @@ void alumnoIniciaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz){
 
     horaActual(&horaTemp, &minutoTemp); // Llamamos a la funcion horaActual para obtener la hora y minutos actuales
 
-    nuevo = crearNodo();
-    if (nuevo == NULL) printf("\n\t\t * Lo sentimos, algo paso.  *\n");
-    nuevo->nLista = nListaTemp;
-    nuevo->marcaDeTiempo.hora = horaTemp;
-    nuevo->marcaDeTiempo.minuto = minutoTemp;
+    errores=0;
     if (*nodoRaiz == NULL){
+        nuevo = crearNodo();
+        if (nuevo == NULL) printf("\n\t\t * Lo sentimos, algo paso.  *\n");
+        nuevo->nLista = nListaTemp;
+        nuevo->marcaDeTiempo.hora = horaTemp;
+        nuevo->marcaDeTiempo.minuto = minutoTemp;
         *nodoRaiz=nuevo;
+        printf("\n\t * ALUMNO AGREGADO AL EXAMEN  *\n");
     }else{
         aux=*nodoRaiz;
+        if (aux->nLista==nListaTemp) errores++;
         while (aux->siguiente != NULL){
             aux = aux->siguiente;
+            if (aux->nLista==nListaTemp) errores++;
         }
-        aux->siguiente=nuevo;
+        if (errores==0){
+            nuevo = crearNodo();
+            if (nuevo == NULL) printf("\n\t\t * Lo sentimos, algo paso.  *\n");
+            nuevo->nLista = nListaTemp;
+            nuevo->marcaDeTiempo.hora = horaTemp;
+            nuevo->marcaDeTiempo.minuto = minutoTemp;
+            aux->siguiente=nuevo;
+            printf("\n\t * ALUMNO AGREGADO AL EXAMEN  *\n");
+        }else{
+            printf("\n\t\t * Se encontro un alumno repetido. No se hara nada.  *\n");
+        }
+        
     }
 }
 
 void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz){
-    int horaTemp, minutoTemp, nListaTemp, errores=0;
+    int horaTemp, minutoTemp, nListaTemp, errores=0, tiempoTardado=0;
     NODO *aux, *anterior;
     char c;
     if (*nodoRaiz == NULL){
@@ -244,20 +267,20 @@ void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz)
                 aux=*nodoRaiz;
                 if ((*nodoRaiz)->nLista == nListaTemp){
                     *nodoRaiz = (*nodoRaiz)->siguiente;
-                    free(aux);
                     printf("\n\t * Alumno encontrado  *\n");
                     printf("Se tomara la hora del sistema para calcular los tiempos\n");
 
                     horaActual(&horaTemp, &minutoTemp);
 
                     // Calcular el tiempo tardado en minutos
-                    int tiempoTardado = (horaTemp - aux->marcaDeTiempo.hora) * 60 + (minutoTemp - aux->marcaDeTiempo.minuto);
+                    tiempoTardado = (minutoTemp - aux->marcaDeTiempo.minuto);
+                    tiempoTardado += (horaTemp - aux->marcaDeTiempo.hora) * 60;
                     
                     // Asignar el tiempo tardado al alumno correspondiente
                     alu[nListaTemp-1].minutosTardados = tiempoTardado;
 
                     // Limpiar la estructura de nodo
-                    //free(aux);
+                    free(aux);
 
                     do{
                         printf("Que calificacion obtuvo? (del 0.0 al 10.0): ");
@@ -279,7 +302,26 @@ void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz)
                         errores++;
                     }else{
                         anterior->siguiente = aux->siguiente;
+
+                        printf("\n\t * Alumno encontrado  *\n");
+                        printf("Se tomara la hora del sistema para calcular los tiempos\n");
+                        horaActual(&horaTemp, &minutoTemp);
+                        // Calcular el tiempo tardado en minutos
+                        int tiempoTardado = (horaTemp - aux->marcaDeTiempo.hora) * 60 + (minutoTemp - aux->marcaDeTiempo.minuto);
+
+                        // Asignar el tiempo tardado al alumno correspondiente
+                        alu[nListaTemp-1].minutosTardados = tiempoTardado;
+
+                        // Limpiar la estructura de nodo
                         free(aux);
+
+                        do{
+                            printf("Que calificacion obtuvo? (del 0.0 al 10.0): ");
+                            scanf(" %f", &calif[nListaTemp-1][2]);
+                            errores = validarCalificacion(calif[nListaTemp-1][2]); // Llamamos a la misma función validarCalificacion
+                            while ((c = getchar()) != '\n' && c != EOF);
+                        } while (errores>0);
+
                     }
                 }
             }
@@ -287,14 +329,26 @@ void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz)
     }
 }
 
-void resultadosFinales(NODO *nodoRaiz, struct alumno alu[]) {
-    NODO *aux = nodoRaiz;
+void resultadosFinales(NODO **nodoRaiz, struct alumno alu[], float calif[][3]) {
+    NODO *aux;
+    int i;
     printf("\n\t\t * RESULTADOS FINALES *\n");
-    printf("\nNombre del Alumno\tMatricula\tTiempo Tardado (minutos)\n");
+    printf("\nN.L\tNombre del Alumno\tMatricula\tTiempo Tardado (minutos)\tCalificacion 1\tCalif. 2\tCalif 3\n");
 
-    while (aux != NULL) {
+    /*while (aux != NULL) {
         printf("%s\t%s\t%d\n", alu[aux->nLista - 1].nombreComp, alu[aux->nLista - 1].matricula, alu[aux->nLista - 1].minutosTardados);
         aux = aux->siguiente;
+    }*/
+    while (*nodoRaiz != NULL){
+        aux=*nodoRaiz;
+        *nodoRaiz = (*nodoRaiz)->siguiente;
+        free(aux);
+    }
+    for (i = 0; i < N; i++){
+        if (calif[i][2]==-1) calif[i][2]=5;
+    }
+    for (i = 0; i < N; i++){
+        printf("%d\t%s\t%s\t%d\t%.1f\t%.1f\t%.1f\n", i+1, alu[i].nombreComp, alu[i].matricula, alu[i].minutosTardados, calif[i][0], calif[i][1], calif[i][2]);
     }
 }
 
@@ -322,7 +376,7 @@ void menuCiclado(struct alumno alu[], float calif[][3], NODO **nodoRaiz) {
                 alumnoTerminaExamen(alu, calif, nodoRaiz);
                 break;
             case 3:
-                resultadosFinales(*nodoRaiz, alu); // Llamar a resultadosFinales con los datos de los alumnos
+                resultadosFinales(nodoRaiz, alu, calif); // Llamar a resultadosFinales con los datos de los alumnos
                 break;
             default:
                 printf("\n\t\t * Input NO valido. Ingrese un numero del 1 al 3 *\n");
