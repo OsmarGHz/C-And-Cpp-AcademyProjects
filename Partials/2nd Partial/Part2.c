@@ -33,23 +33,23 @@ NODO *crearNodo(){
 }
 
 int validarNombre(const char nombre[]) {
-    int i, palabra_valida = 0, letras_palabra = 0;
+    int i, palabraValida = 0, letrasPalabra = 0;
 
     for (i = 0; nombre[i] != '\0'; i++) {
         // Si encontramos un espacio, reiniciamos el contador de letras de la palabra
         if (isspace(nombre[i])) {
-            palabra_valida = 0;
-            letras_palabra = 0;
+            palabraValida = 0;
+            letrasPalabra = 0;
             continue;
         }
 
         // Comprobamos que el primer caracter de una palabra sea ser mayúscula
-        if (!palabra_valida) {
+        if (!palabraValida) {
             if (!isupper(nombre[i])) {
                 printf("\n\t\t * El nombre debe comenzar con mayuscula *\n");
                 return 1; // Codigo de error
             }
-            palabra_valida = 1;
+            palabraValida = 1;
         } else {
             // Si es una letra, debe ser minúscula
             if (!islower(nombre[i])) {
@@ -58,10 +58,10 @@ int validarNombre(const char nombre[]) {
             }
         }
 
-        letras_palabra++;
+        letrasPalabra++;
 
         // Comprobamos si la palabra tiene al menos dos caracteres
-        if (isspace(nombre[i + 1]) && letras_palabra < 2) {
+        if (isspace(nombre[i + 1]) && letrasPalabra < 2) {
             printf("\n\t\t * Cada palabra del nombre debe tener al menos dos caracteres *\n");
             return 1; // Codigo de error
         }
@@ -102,6 +102,7 @@ int validarMatriculaRepetida(const char matricula[], const struct alumno alu[], 
 }
 
 int validarCalificacion(float calificacion) {
+    int parteDecimal;
     // Comprobamos si la calificacion esta dentro del rango permitido
     if (calificacion < 0.0 || calificacion > 10.0) {
         printf("\n\t\t * La calificacion debe estar en el rango de 0.0 a 10.0 *\n");
@@ -109,8 +110,8 @@ int validarCalificacion(float calificacion) {
     }
 
     // Comprobamos que la calificacion tenga como maximo un decimal
-    int parte_decimal = (int)(calificacion * 10) % 10;
-    if (parte_decimal != 0 && parte_decimal != 5) {
+    parteDecimal = (int)(calificacion * 10) % 10;
+    if (parteDecimal != 0 && parteDecimal != 5) {
         printf("\n\t\t * La calificacion debe tener como maximo un decimal *\n");
         return 1; // Indica que hay error
     }
@@ -154,21 +155,21 @@ void leerCalifAlumnos(int i, float calif[][NUMPARCIALES]){
     int errores;
     char c;
     do{
-            printf("Ingrese la 1ra calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
-            scanf(" %f", &calif[i][0]);
-            errores = validarCalificacion(calif[i][0]); // Llamamos a la función validarCalificacion
-            while ((c = getchar()) != '\n' && c != EOF);
-        } while (errores>0);
+        printf("Ingrese la 1ra calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
+        scanf(" %f", &calif[i][0]);
+        errores = validarCalificacion(calif[i][0]); // Llamamos a la función validarCalificacion
+        while ((c = getchar()) != '\n' && c != EOF);
+    } while (errores>0);
 
-        do{
-            printf("Ingrese la 2da calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
-            scanf(" %f", &calif[i][1]);
-            errores = validarCalificacion(calif[i][1]); // Llamamos a la misma función validarCalificacion
-            while ((c = getchar()) != '\n' && c != EOF);
-        } while (errores>0);
-        
+    do{
+        printf("Ingrese la 2da calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
+        scanf(" %f", &calif[i][1]);
+        errores = validarCalificacion(calif[i][1]); // Llamamos a la misma función validarCalificacion
+        while ((c = getchar()) != '\n' && c != EOF);
+    } while (errores>0);
 }
 
+/*
 int validarTiempo(int hora, int minuto) {
     // Comprobamos si la hora está en el rango correcto
     if (hora < 0 || hora > 23) {
@@ -183,6 +184,7 @@ int validarTiempo(int hora, int minuto) {
     }
     return 0; // No hay errores
 }
+*/
 
 void horaActual(int *hora, int *minuto) {
     time_t rawtime;
@@ -245,7 +247,7 @@ void alumnoTerminaExamen(struct alumno alu[], float calif[][NUMPARCIALES], NODO 
                     printf("\n\t * Alumno encontrado  *\n");
                     do{
                         printf("Que calificacion obtuvo? (del 0.0 al 10.0): ");
-                        scanf(" %.1f", &calif[nListaTemp-1][2]);
+                        scanf(" %f", &calif[nListaTemp-1][2]);
                         errores = validarCalificacion(calif[nListaTemp-1][2]); // Llamamos a la misma función validarCalificacion
                         while ((c = getchar()) != '\n' && c != EOF);
                     } while (errores>0);
@@ -304,9 +306,9 @@ void menuCiclado(struct alumno alu[], float calif[][NUMPARCIALES], NODO **nodoRa
                 break;
         }
     } while (input != 3);
-    }
+}
 
-
+/*
 void leerMat(float mat[][NUMPARCIALES]){
     int i;
     for (i = 0; i < N; i++){
@@ -323,6 +325,7 @@ void escribirMat(float mat[][NUMPARCIALES]){
         printf(" %f %f %f", mat[i][0], mat[i][1], mat[i][2]);
     }
 }
+*/
 
 int main(){
     int i;
