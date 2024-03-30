@@ -49,6 +49,19 @@ void mostrarButacas(unsigned char butacas[][2])
     }
 }
 
+int showNumberButacasDesocupadas(unsigned char butacas[][2]){
+    int fila,columna,butacasDesocupadas=0;
+    for (fila = 0; fila < FILAS; fila++){
+        for (columna = 0; columna < COLUMNAS; columna++){
+            if(estadoButaca(butacas, fila, columna)==0){
+                butacasDesocupadas++;
+            }
+            //printf("\t%c", estadoButaca(butacas, fila, columna) ? 'O' : 'L');
+        }
+    }
+    return butacasDesocupadas;
+}
+
 typedef struct
 {
     char nombrePelicula[50];
@@ -63,7 +76,7 @@ int main()
     short int i, numeroFunciones = 0, decision = 0, decision2 = 0, decision3 = 0;
     char c;
     FUNCION funciones[NUMMAXFUN]={0};
-    int fila, columna;
+    int fila, columna, temp;
 
     printf("\n\t * Bienvenido, admin! *");
 
@@ -251,7 +264,8 @@ int main()
                         mostrarButacas(funciones[i-1].butacas);
                         printf("\n\t1. Asignar butaca");
                         printf("\n\t2. Liberar butaca");
-                        printf("\n\t3. Salir\n");
+                        printf("\n\t3. Salir");
+                        printf("\n\t4. Decir cuantas sillas andan desocupadas en la sala");
                         printf("\nIngrese el numero de la opcion deseada: ");
                         scanf("%hd", &decision3);
                         switch (decision3){
@@ -291,6 +305,9 @@ int main()
                             case 3:
                                 printf("Saliendo del programa...\n");
                                 break;
+                            case 4:
+                                printf("\nEste es el numero de butacas que hay aqui, desocupadas: %d\n", showNumberButacasDesocupadas(funciones[i-1].butacas));
+                                break;
                             default:
                                 printf("Opcion invalida. Por favor, seleccione una opcion valida.\n");
                         }
@@ -305,5 +322,3 @@ int main()
     }
     return 0;
 }
-
-////funcion que devuelva el numero de sillas desocupadas en la sala
