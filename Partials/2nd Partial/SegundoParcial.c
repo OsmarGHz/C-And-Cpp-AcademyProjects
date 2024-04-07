@@ -111,18 +111,11 @@ int validarMatriculaRepetida(const char matricula[], const struct alumno alu[], 
     return 0; // No se encontraron matrículas repetidas
 }
 
-int validarCalificacion(float calificacion) {
+int validarCalificacion(double calificacion) {
     int parteDecimal;
     // Comprobamos si la calificacion esta dentro del rango permitido
     if (calificacion < 0.0 || calificacion > 10.0) {
         printf("\n\t\t * La calificacion debe estar en el rango de 0.0 a 10.0 *\n");
-        return 1; // Indica que hay error
-    }
-
-    // Comprobamos que la calificacion tenga como maximo un decimal
-    parteDecimal = (int)(calificacion * 10) % 10;
-    if (parteDecimal != 0 && parteDecimal != 5) {
-        printf("\n\t\t * La calificacion debe tener como maximo un decimal *\n");
         return 1; // Indica que hay error
     }
     return 0; // Sin errores
@@ -162,26 +155,27 @@ void leerAlumnos(int i, struct alumno alu[]){
     alu[i].minutosTardados=0;
 }
 
-void leerUnaCalificacion(){
+void leerUnaCalificacion(int i, int currentPartial, double calif[][3]){
+    int errores;
+    do{
+        printf("Ingrese la ");
+        switch (currentPartial){
+            case 0: printf("1ra"); break;
+            case 1: printf("2da"); break;
+            case 2: printf("3ra"); break;
+            default: printf("rangoDesconocido"); break;
+        }
+        printf(" calificacion del alumno %d (del 0.0 al 10.0, se usara 1 solo decimal): ", i+1);
+        scanf(" %lf", &calif[i][currentPartial]);
+        errores = validarCalificacion(calif[i][currentPartial]); // Llamamos a la función validarCalificacion
+        limpiarBuffer();
+    } while (errores>0);
     
 }
 
-void leerCalifAlumnos(int i, float calif[][3]){
-    int errores;
-    do{
-        printf("Ingrese la 1ra calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
-        scanf(" %f", &calif[i][0]);
-        errores = validarCalificacion(calif[i][0]); // Llamamos a la función validarCalificacion
-        limpiarBuffer();
-    } while (errores>0);
-
-    do{
-        printf("Ingrese la 2da calificacion del alumno %d (del 0.0 al 10.0): ", i+1);
-        scanf(" %f", &calif[i][1]);
-        errores = validarCalificacion(calif[i][1]); // Llamamos a la misma función validarCalificacion
-        limpiarBuffer();
-    } while (errores>0);
-
+void leerCalifAlumnos(int i, double calif[][3]){
+    leerUnaCalificacion(i,0,calif);
+    leerUnaCalificacion(i,1,calif);
     calif[i][2]=-1; //Esta calificacion NO se valida, ya que luego se define si acabo o no el examen
 }
 
@@ -197,7 +191,7 @@ void horaActual(int *hora, int *minuto) {
 }
 
 
-void alumnoIniciaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz){
+void alumnoIniciaExamen(struct alumno alu[], double calif[][3], NODO **nodoRaiz){
     int horaTemp, minutoTemp, nListaTemp, errores=0;
     NODO *nuevo, *aux;
     do{
@@ -240,7 +234,7 @@ void alumnoIniciaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz){
     }
 }
 
-void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz){
+void alumnoTerminaExamen(struct alumno alu[], double calif[][3], NODO **nodoRaiz){
     int horaTemp, minutoTemp, nListaTemp, errores=0, tiempoTardado=0;
     NODO *aux, *anterior;
     if (*nodoRaiz == NULL){
@@ -270,12 +264,8 @@ void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz)
                     // Limpiar la estructura de nodo
                     free(aux);
 
-                    do{
-                        printf("Que calificacion obtuvo? (del 0.0 al 10.0): ");
-                        scanf(" %f", &calif[nListaTemp-1][2]);
-                        errores = validarCalificacion(calif[nListaTemp-1][2]); // Llamamos a la misma función validarCalificacion
-                        limpiarBuffer();
-                    } while (errores>0);
+                    printf("Que calificacion obtuvo? (del 0.0 al 10.0): ");
+                    leerUnaCalificacion(nListaTemp-1,2,calif);
 
                 }else{
                     aux=*nodoRaiz;
@@ -305,7 +295,7 @@ void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz)
 
                         do{
                             printf("Que calificacion obtuvo? (del 0.0 al 10.0): ");
-                            scanf(" %f", &calif[nListaTemp-1][2]);
+                            scanf(" %lf", &calif[nListaTemp-1][2]);
                             errores = validarCalificacion(calif[nListaTemp-1][2]); // Llamamos a la misma función validarCalificacion
                             limpiarBuffer();
                         } while (errores>0);
@@ -317,7 +307,7 @@ void alumnoTerminaExamen(struct alumno alu[], float calif[][3], NODO **nodoRaiz)
     }
 }
 
-void resultadosFinales(NODO **nodoRaiz, struct alumno alu[], float calif[][3]) {
+void resultadosFinales(NODO **nodoRaiz, struct alumno alu[], double calif[][3]) {
     NODO *aux;
     int i;
     printf("\n\t\t * RESULTADOS FINALES *\n");
@@ -332,7 +322,7 @@ void resultadosFinales(NODO **nodoRaiz, struct alumno alu[], float calif[][3]) {
         if (calif[i][2]==-1) calif[i][2]=5;
     }
     for (i = 0; i < N; i++){
-        printf("%d\t%s\t%s\t%d\t%.1f\t%.1f\t%.1f\n", i+1, alu[i].nombreComp, alu[i].matricula, alu[i].minutosTardados, calif[i][0], calif[i][1], calif[i][2]);
+        printf("%d\t%s\t%s\t%d\t%.1lf\t%.1lf\t%.1lf\n", i+1, alu[i].nombreComp, alu[i].matricula, alu[i].minutosTardados, calif[i][0], calif[i][1], calif[i][2]);
     }
 }
 
@@ -344,7 +334,7 @@ void imprimirMenu() {
     printf("\n Ingrese la opcion deseada: ");
 }
 
-void menuCiclado(struct alumno alu[], float calif[][3], NODO **nodoRaiz) {
+void menuCiclado(struct alumno alu[], double calif[][3], NODO **nodoRaiz) {
     int input;
     do {
         imprimirMenu();
@@ -369,7 +359,7 @@ void menuCiclado(struct alumno alu[], float calif[][3], NODO **nodoRaiz) {
 
 int main(){
     int i;
-    float calificaciones[N][3];
+    double calificaciones[N][3];
     ALUMNO alumnos[N];
     NODO *nodoRaiz = NULL;
 
