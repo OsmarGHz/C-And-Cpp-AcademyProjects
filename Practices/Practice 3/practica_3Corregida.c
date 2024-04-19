@@ -17,19 +17,19 @@ void Funcion_impresion(int arrayinscritos[],int paselista[], int inscritos, int 
 	printf("No. Butaca\tNo. Lista\tMatricula\n");
 	for (i=0; i<aTemprana; i++){
 		int n=paselista[i];
-		printf("    %d    \t\t%d\t\t%d\n",(i+1), (paselista[i]+1),arrayinscritos[n]);
+		printf("    %d    \t\t%d\t\t%d\n",(i+1), (paselista[i]),arrayinscritos[n-1]);
 	}
     printf("\nAlumnos que llegaron tarde: \n");
 	printf("No. Butaca\tNo. Lista\tMatricula\n");
 	for (; i<(aTemprana+aTarde); i++){
 		int n=paselista[i];
-		printf("    %d    \t\t%d\t\t%d\n",(i+1), (paselista[i]+1),arrayinscritos[n]);
+		printf("    %d    \t\t%d\t\t%d\n",(i+1), (paselista[i]),arrayinscritos[n-1]);
 	}
     printf("\nAlumnos que no llegaron: \n");
 	printf("No. Lista\tMatricula\n");
 	for (; i<inscritos; i++){
 		int n=paselista[i];
-		printf("    %d\t\t%d\n", (paselista[i]+1),arrayinscritos[n]);
+		printf("    %d\t\t%d\n", (paselista[i]),arrayinscritos[n-1]);
 	}
 }
 
@@ -44,7 +44,7 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 		}
 		cont=0;
 		for (s=0;s<inscritos; s++){ 
-			if (paselista[s]==nolista-1){
+			if (paselista[s]==nolista){
 				cont++;
 				if (cont==1){
 					printf("Error, ya existe ese numero de lista en paselista indice: %d\n ",paselista[s]); 
@@ -54,7 +54,7 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 			}
 		}
 	}while (cont!=0);
-	paselista[i]=nolista-1;
+	paselista[i]=nolista;
 	
 }	
 	
@@ -65,7 +65,7 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 		int p;
 		//
 		int inscritos=0;
-		printf("Ingrese el numero de alumnos a incribir\n");
+		printf("Ingrese el numero de alumnos a inscribir\n");
 		scanf("%d",&inscritos);
 		while (inscritos<1 || inscritos>20){
 			printf("Error, cupo maximo: %d\nIngrese nuevamente a continuacion",Cupo);
@@ -117,7 +117,7 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 			asistenciaTarde=n;
 			p=asistenciaTemprana + asistenciaTarde + NoFueron;
 		}
-		c=asistenciaTemprana+1;//para que la matriz no inicie desde 0, sino desde el valor de la seccion anterior
+		c=asistenciaTemprana;//para que la matriz no inicie desde 0, sino desde el valor de la seccion anterior
 		
 		
 		for (int s=0; s<=n-1; s++){
