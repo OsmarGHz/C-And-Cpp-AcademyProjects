@@ -58,7 +58,7 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 	
 }	
 	
-	void funcion_principal(int paselista[Cupo], int arrayinscritos[]) {
+void funcion_principal(int paselista[Cupo], int arrayinscritos[]) {
 		int n,asistenciaTemprana=0;
 		int asistenciaTarde=0, c;
 		int NoFueron=0, d;
@@ -68,12 +68,12 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 		printf("Ingrese el numero de alumnos a inscribir\n");
 		scanf("%d",&inscritos);
 		while (inscritos<1 || inscritos>20){
-			printf("Error, cupo maximo: %d\nIngrese nuevamente a continuacion",Cupo);
+			printf("Error, cupo maximo o cupo invalido: %d\nIngrese nuevamente a continuacion",Cupo);
 			scanf("%d",&inscritos);
 		}
 		for (int i=0; i<inscritos; i++){
 			int t;
-			printf("Escriba la matricula %d a continuacion\n", i+1);
+			printf("Escriba la matricula %d a continuacion (desde 1010 a 1200)\n", i+1);
 			scanf("%d",&t);
 			while (t<1010 || t>1200){
 				printf("Error, rebaso el rango permitido (matriculas validas desde 1010 a 1200)\nIngrese de nuevo a continuacion\n");
@@ -111,7 +111,7 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 		scanf("%d",&n);
 		asistenciaTarde=n;
 		p=asistenciaTemprana + asistenciaTarde + NoFueron;
-		while (p>0 && p>inscritos){  //checa que los ninos metidos en el programa no sean mayor a 10 en total
+		while (p>0 && p>inscritos){  //checa que los ninos metidos en el programa no sean mayor en total
 			printf("Error, el numero de ninos por cada seccion rebasa el numero de ninos totales inscritos\n");
 			scanf("%d",&n);
 			asistenciaTarde=n;
@@ -125,6 +125,11 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 			c++;
 		}
 		
+		d=c;
+		NoFueron = inscritos - asistenciaTemprana - asistenciaTarde;
+		printf("\n\t\tPasando a leer los que no llegaron: \n\n");
+		n=NoFueron;
+		/*
 		printf("Ahora escribe el numero de alumnos que no aistieron \n");
 		scanf("%d",&n);
 		NoFueron=n;
@@ -135,14 +140,14 @@ void funcionvalidacion(int paselista[], int i, int inscritos){
 			NoFueron=n;
 			p=asistenciaTemprana + asistenciaTarde + NoFueron;
 		}
-		d=c;
+		*/
 		for (int s=0; s<=n-1; s++){
 			funcionvalidacion(paselista, d, inscritos);
 			d++;
 			//printf("d es igual a : %d\n",d);
 		}
 		Funcion_impresion(arrayinscritos, paselista, inscritos, asistenciaTemprana, asistenciaTarde, NoFueron);
-	}
+}
 	
 	void funcion_inicializar(int paselista[]){
 		for (int i=0; i<Cupo; i++){
