@@ -1,0 +1,15 @@
+-------------------
+Turno: A0A0A
+Operaciones totales: 87
+Urgencia: 1
+-------------------
+-------------------
+Turno: A0A0B
+Operaciones totales: 6
+Urgencia: 5
+-------------------
+-------------------
+Turno: A0A0C
+Operaciones totales: 9
+Urgencia: 7
+-------------------
