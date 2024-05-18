@@ -16,11 +16,15 @@ typedef struct Nodo {
 
 Nodo* crearNodo(Cliente cliente) {
     Nodo *nuevoNodo = (Nodo*)malloc(sizeof(Nodo));
+    if (nuevoNodo == NULL) {
+        printf("Error: No se pudo asignar memoria para el nuevo nodo.\n");
+        return nuevoNodo;
+    }
     strcpy(nuevoNodo->cliente.turno, cliente.turno);
     nuevoNodo->cliente.operacionesPendientes = cliente.operacionesPendientes;
     nuevoNodo->cliente.urgencia = cliente.urgencia;
     nuevoNodo->siguiente = NULL;
-    nuevoNodo->cliente.operacionesHechas = 0;
+    nuevoNodo->cliente.operacionesHechas = cliente.operacionesHechas;
     return nuevoNodo;
 }
 
@@ -178,7 +182,7 @@ void guardarListaEnArchivoBinario(Nodo* cola) {
     // Recorrer la lista y escribir cada nodo en el archivo binario
     actual = cola;
     while (actual != NULL) {
-        fwrite(&(actual->cliente), sizeof(Cliente) - sizeof(struct Cliente *), 1, archivo);
+        fwrite(&(actual->cliente), sizeof(Cliente), 1, archivo);
         actual = actual->siguiente;
     }
 
@@ -188,20 +192,17 @@ void guardarListaEnArchivoBinario(Nodo* cola) {
 }
 
 // Función para cargar la lista desde un archivo binario
-Nodo* cargarListaDesdeArchivoBinario() {
+Nodo* cargarListaDesdeArchivoBinario(int *contadorTurnos) {
     // Obtener la fecha y hora actual para buscar el archivo correcto
     time_t tiempo = time(NULL);
     struct tm* tiempoLocal = localtime(&tiempo);
     char nombreArchivo[50];
     FILE* archivo, *updater = NULL;
-    Nodo* inicio = NULL, *nuevoNodo = NULL;
+    Nodo* inicio = NULL, *nuevoNodo = NULL, *ultimo = NULL;
     Cliente cliente;
 
-    if((updater=fopen("updater.txt","r")) != NULL){
-        fscanf(updater, "%s", nombreArchivo);
-    }else{
-        nombreArchivo[0] = 0;
-    }
+    if((updater=fopen("updater.txt","r")) != NULL) fscanf(updater, "%s", nombreArchivo);
+    else nombreArchivo[0] = 0;
 
     archivo = fopen(nombreArchivo, "rb");
     if (archivo == NULL) {
@@ -210,15 +211,16 @@ Nodo* cargarListaDesdeArchivoBinario() {
         return NULL;
     }
 
-    while (fread(&cliente, sizeof(Cliente) - sizeof(struct Cliente *), 1, archivo)) {
-        nuevoNodo = (Nodo*)malloc(sizeof(Nodo));
-        if (nuevoNodo == NULL) {
-            printf("Error: No se pudo asignar memoria para el nuevo nodo.\n");
-            return inicio;
+    while (fread(&cliente, sizeof(Cliente), 1, archivo)) {
+        nuevoNodo = crearNodo(cliente);
+        if (inicio == NULL){
+            inicio = nuevoNodo;
+            ultimo = nuevoNodo;
+        }else{
+            ultimo->siguiente = nuevoNodo;
+            ultimo = nuevoNodo;
         }
-        nuevoNodo->cliente = cliente;
-        nuevoNodo->siguiente = inicio;
-        inicio = nuevoNodo;
+        (*contadorTurnos)++;
     }
 
     fclose(archivo);
@@ -254,7 +256,7 @@ void menuCiclado(int *contadorTurnos, Nodo **listaClientes){
                         printf("\nNumero de urgencia inexistente. Intente de nuevo");
                     }
                 }while (nuevoCliente.urgencia < 1);
-
+                nuevoCliente.operacionesHechas = 0;
                 insertarPorUrgencia(listaClientes, crearNodo(nuevoCliente));
                 datosCliente(nuevoCliente);
                 guardarClienteEnArchivoTexto(nuevoCliente);
@@ -283,7 +285,7 @@ int main() {
     Nodo* listaClientes = NULL;
     int contadorTurnos=0;
 
-    listaClientes = cargarListaDesdeArchivoBinario();
+    listaClientes = cargarListaDesdeArchivoBinario(&contadorTurnos);
     menuCiclado(&contadorTurnos, &listaClientes);
 
     return 0;
