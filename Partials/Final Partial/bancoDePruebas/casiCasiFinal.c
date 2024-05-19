@@ -79,21 +79,6 @@ void generarTurno(char turno[], int *contadorTurnos) {
     (*contadorTurnos)++;
 }
 
-void guardarClienteEnArchivoTexto(Cliente cliente) {
-    FILE *archivo = fopen("clientes.txt", "a");
-    if (archivo == NULL) {
-        printf("Error al abrir el archivo de texto.\n");
-        return;
-    }
-    fprintf(archivo, "-------------------\n");
-    fprintf(archivo, "Turno: %s\n", cliente.turno);
-    fprintf(archivo, "Operaciones totales: %d\n", cliente.operacionesPendientes);
-    fprintf(archivo, "Urgencia: %d\n", cliente.urgencia);
-    fprintf(archivo, "-------------------\n");
-
-    fclose(archivo);
-}
-
 void datosCliente(Cliente cliente){
 
     printf("-------------------\n");
@@ -105,11 +90,63 @@ void datosCliente(Cliente cliente){
     
 }
 
-void pasarAPreHistorial(Nodo** clienteAtendido, Nodo** listaNextReporte){
-    
+void pasarAPreHistorial(Nodo** clienteAtendido){
+    FILE* archivo = NULL;
+    archivo = fopen("reportUpdater.bin", "ab");
+    if (archivo == NULL) {
+        printf("Hubo un problema al registrar a quien acaba de llegar a 0 operaciones.\n");
+        return;
+    }
+    fwrite(&((*clienteAtendido)->cliente), sizeof(Cliente), 1, archivo);
+    fclose(archivo);
 }
 
-void atenderCliente(Nodo** cola, Nodo** listaNextReporte) {
+void guardarClienteEnArchivoTexto(Cliente cliente, char nombreArchivo[50]) {
+    FILE *archivo = fopen(nombreArchivo, "a");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de texto.\n");
+        return;
+    }
+    fprintf(archivo, "-------------------\n");
+    fprintf(archivo, "Turno: %s\n", cliente.turno);
+    fprintf(archivo, "Operaciones realizadas: %d\n", cliente.operacionesHechas);
+    fprintf(archivo, "Urgencia: %d\n", cliente.urgencia);
+    fprintf(archivo, "-------------------\n");
+
+    fclose(archivo);
+}
+
+void generarReporte(){
+    time_t tiempo = time(NULL);
+    struct tm* tiempoLocal = localtime(&tiempo);
+    char nombreArchivo[50];
+    Cliente cliente;
+    FILE *reportUpdater = NULL, *archivo = NULL;
+
+    sprintf(nombreArchivo, "reporte%02d%02d%02d%02d%02d.txt", tiempoLocal->tm_mday, tiempoLocal->tm_mon + 1,
+            tiempoLocal->tm_year - 100, tiempoLocal->tm_hour, tiempoLocal->tm_min);
+
+    reportUpdater = fopen("reportUpdater.bin", "rb");
+    if (reportUpdater == NULL) {
+        printf("Hubo un error al procesar reporte\n");
+        return;
+    }
+    archivo = fopen(nombreArchivo, "a");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de texto.\n");
+        return;
+    }
+    fprintf(archivo, "\n-----Reporte %02d/%02d/%02d %02d:%02d-----\n\n", tiempoLocal->tm_mday, tiempoLocal->tm_mon + 1,
+            tiempoLocal->tm_year - 100, tiempoLocal->tm_hour, tiempoLocal->tm_min);
+    fclose(archivo);
+
+    while (fread(&cliente, sizeof(Cliente), 1, reportUpdater)) guardarClienteEnArchivoTexto(cliente, nombreArchivo);
+    fclose(reportUpdater);
+    reportUpdater = fopen("reportUpdater.bin", "wb");
+    fclose(reportUpdater);
+}
+
+void atenderCliente(Nodo** cola) {
     Nodo* clienteAtendido;
     // Verificar si la cola esta vacia
     if (*cola == NULL) {
@@ -135,8 +172,9 @@ void atenderCliente(Nodo** cola, Nodo** listaNextReporte) {
         clienteAtendido->cliente.operacionesPendientes = 0;
         // Eliminar al cliente de la cola
         *cola = clienteAtendido->siguiente;
-        pasarAPreHistorial(&clienteAtendido, listaNextReporte);
+        pasarAPreHistorial(&clienteAtendido);
         free(clienteAtendido);
+        if (*cola == NULL) generarReporte();
     }
 
     printf("Cliente atendido.\n");
@@ -145,6 +183,11 @@ void atenderCliente(Nodo** cola, Nodo** listaNextReporte) {
 void mostrarFila(Nodo* cola) {
     printf("Clientes en la cola de prioridades:\n");
     Nodo* temp = cola;
+    if (cola == NULL)
+    {
+        printf("\t* No hay clientes en la fila *");
+    }
+    
     while (temp != NULL) {
         printf("Identificador: %s - Urgencia: %d - Operaciones restantes: %d\n",
                temp->cliente.turno, temp->cliente.urgencia, temp->cliente.operacionesPendientes);
@@ -162,7 +205,7 @@ void liberarLista(Nodo* lista) {
 }
 
 // Funcion para guardar los datos de la lista en un archivo binario
-void guardarListaEnArchivoBinario(Nodo* cola) {
+void guardarListaEnArchivoBinario(Nodo* cola, int *contadorTurnos) {
     // Obtener la fecha y hora actual para formar el nombre del archivo
     time_t tiempo = time(NULL);
     struct tm* tiempoLocal = localtime(&tiempo);
@@ -175,6 +218,8 @@ void guardarListaEnArchivoBinario(Nodo* cola) {
 
     if((updater=fopen("updater.txt","w")) != NULL){
         fprintf(updater, "%s", nombreArchivo);
+        fprintf(updater, "\n");
+        fprintf(updater, "%d", *contadorTurnos);
     }
 
     // Abrir el archivo binario en modo escritura
@@ -198,15 +243,18 @@ void guardarListaEnArchivoBinario(Nodo* cola) {
 
 // Funcion para cargar la lista desde un archivo binario
 Nodo* cargarListaDesdeArchivoBinario(int *contadorTurnos) {
-    // Obtener la fecha y hora actual para buscar el archivo correcto
-    time_t tiempo = time(NULL);
-    struct tm* tiempoLocal = localtime(&tiempo);
     char nombreArchivo[50];
     FILE* archivo, *updater = NULL;
     Nodo* inicio = NULL, *nuevoNodo = NULL, *ultimo = NULL;
     Cliente cliente;
 
-    if((updater=fopen("updater.txt","r")) != NULL) fscanf(updater, "%s", nombreArchivo);
+    if((updater=fopen("updater.txt","r")) != NULL){
+        fscanf(updater, "%s", nombreArchivo);
+        fscanf(updater, "\n");
+        if (fscanf(updater, "%d", contadorTurnos) == 0){
+            *contadorTurnos = 0;
+        }
+    }
     else nombreArchivo[0] = 0;
 
     archivo = fopen(nombreArchivo, "rb");
@@ -225,10 +273,10 @@ Nodo* cargarListaDesdeArchivoBinario(int *contadorTurnos) {
             ultimo->siguiente = nuevoNodo;
             ultimo = nuevoNodo;
         }
-        (*contadorTurnos)++;
     }
 
     fclose(archivo);
+    fclose(updater);
     printf("Datos cargados desde el archivo binario: %s\n", nombreArchivo);
     return inicio;
 }
@@ -256,8 +304,7 @@ void operacionNuevoCliente(int *contadorTurnos, Nodo** listaClientes){
     datosCliente(nuevoCliente);
 }
 
-
-void menuCiclado(int *contadorTurnos, Nodo **listaClientes, Nodo **listaNextReporte){
+void menuCiclado(int *contadorTurnos, Nodo **listaClientes){
     int opcion;
 
     do {
@@ -272,11 +319,11 @@ void menuCiclado(int *contadorTurnos, Nodo **listaClientes, Nodo **listaNextRepo
                 break;
             case 2:
                 // Atender cliente
-                atenderCliente(listaClientes, listaNextReporte);
+                atenderCliente(listaClientes);
                 break;
             case 3:
                 // Guardar los datos de la lista en un archivo binario
-                guardarListaEnArchivoBinario(*listaClientes);
+                guardarListaEnArchivoBinario(*listaClientes, contadorTurnos);
                 liberarLista(*listaClientes);
                 printf("Saliendo del programa...\n");
                 break;
@@ -291,11 +338,12 @@ void menuCiclado(int *contadorTurnos, Nodo **listaClientes, Nodo **listaNextRepo
 
 
 int main() {
-    Nodo* listaClientes = NULL, *listaNextReporte = NULL;
+    Nodo* listaClientes = NULL;
     int contadorTurnos=0;
 
     listaClientes = cargarListaDesdeArchivoBinario(&contadorTurnos);
-    menuCiclado(&contadorTurnos, &listaClientes, &listaNextReporte);
+    if (listaClientes!=NULL) mostrarFila(listaClientes);
+    menuCiclado(&contadorTurnos, &listaClientes);
 
     return 0;
 }

@@ -1,0 +1,13 @@
+
+-----Reporte 19/05/24 12:54-----
+
+-------------------
+Turno: A0A0F
+Operaciones realizadas: 5
+Urgencia: 3
+-------------------
+-------------------
+Turno: A0A0E
+Operaciones realizadas: 6
+Urgencia: 4
+-------------------
