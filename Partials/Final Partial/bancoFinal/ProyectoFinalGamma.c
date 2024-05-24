@@ -1,7 +1,14 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+/*
+Integrantes del equipo:
+    ++ Hernandez Prado Osmar Javier
+    ++ Lopez Momox Limhi Gerson
+    ++ Cortes Arenas Nadia
+*/
 
 typedef struct Cliente {
     char turno[10];
@@ -144,6 +151,10 @@ void generarReporte(){
     fclose(reportUpdater);
     reportUpdater = fopen("reportUpdater.bin", "wb");
     fclose(reportUpdater);
+
+    printf("...........................................\n");
+    printf("Importante: El reporte de clientes ha sido generado en el archivo de texto: %s\n", nombreArchivo);
+    printf("...........................................\n");
 }
 
 void atenderCliente(Nodo** cola) {
@@ -160,7 +171,9 @@ void atenderCliente(Nodo** cola) {
 
     // Reducir el numero de operaciones del cliente (maximo 3)
     if (clienteAtendido->cliente.operacionesPendientes > 3) {
+        printf("- - - - - - - - - - - - - - - - - - - - - - - - - - \n");
         printf("Este cliente tiene mas de 3 operaciones pendientes.\n");
+        printf("- - - - - - - - - - - - - - - - - - - - - - - - - - \n");
         clienteAtendido->cliente.operacionesPendientes -= 3;
         clienteAtendido->cliente.operacionesHechas += 3;
         // Mover al cliente al final de la cola
@@ -181,7 +194,9 @@ void atenderCliente(Nodo** cola) {
 }
 
 void mostrarFila(Nodo* cola) {
+    printf("- - - - - - - - - - - - - - - - - - -\n");
     printf("Clientes en la cola de prioridades:\n");
+    printf("- - - - - - - - - - - - - - - - - - -\n");
     Nodo* temp = cola;
     if (cola == NULL)
     {
@@ -225,7 +240,10 @@ void guardarListaEnArchivoBinario(Nodo* cola, int *contadorTurnos) {
     // Abrir el archivo binario en modo escritura
     archivo = fopen(nombreArchivo, "wb");
     if (archivo == NULL) {
+        printf("! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! \n");
         printf("Error al abrir el archivo de clientes.\n");
+        printf("¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ ¡ \n");
+
         return;
     }
 
@@ -238,7 +256,9 @@ void guardarListaEnArchivoBinario(Nodo* cola, int *contadorTurnos) {
 
     // Cerrar el archivo
     fclose(archivo);
+    printf("...........................................\n");
     printf("Datos de la lista guardados en el archivo binario: %s\n", nombreArchivo);
+    printf("...........................................\n");
 }
 
 // Funcion para cargar la lista desde un archivo binario
@@ -259,8 +279,10 @@ Nodo* cargarListaDesdeArchivoBinario(int *contadorTurnos) {
 
     archivo = fopen(nombreArchivo, "rb");
     if (archivo == NULL) {
+        printf("..................................................\n");
         printf("No se encontro un archivo de clientes para cargar.\n");
         printf("Cargando programa desde Cero\n");
+        printf("..................................................\n");
         return NULL;
     }
 
@@ -277,7 +299,10 @@ Nodo* cargarListaDesdeArchivoBinario(int *contadorTurnos) {
 
     fclose(archivo);
     fclose(updater);
+    printf("...........................................\n");
     printf("Datos cargados desde el archivo binario: %s\n", nombreArchivo);
+    printf("...........................................\n");
+
     return inicio;
 }
 
@@ -285,18 +310,26 @@ void operacionNuevoCliente(int *contadorTurnos, Nodo** listaClientes){
     Cliente nuevoCliente;
     generarTurno(nuevoCliente.turno, contadorTurnos);
     do{
-        printf("\nIngrese el numero de operaciones del cliente:\n");
+
+        printf("\nIngrese el numero de operaciones del cliente: ");
         scanf("%d", &nuevoCliente.operacionesPendientes);
         if (nuevoCliente.operacionesPendientes < 1){
+            printf("\n- - - - - - - - - - - - - - - - - - - - - - - -");
             printf("\nNumero de operaciones erroneo. Intente de nuevo\n");
+            printf("- - - - - - - - - - - - - - - - - - - - - - - -\n");
         }
     }while (nuevoCliente.operacionesPendientes < 1);
 
     do{
-        printf("\nIngrese el grado de urgencia (mayor que cero):\n");
+  
+        printf("\nIngrese el grado de urgencia (mayor que cero): ");
         scanf("%d", &nuevoCliente.urgencia);
+        
         if (nuevoCliente.urgencia < 1){
+            printf("\n- - - - - - - - - - - - - - - - - - - - - - - -");
             printf("\nNumero de urgencia inexistente. Intente de nuevo");
+            printf("\n- - - - - - - - - - - - - - - - - - - - - - - -\n");
+
         }
     }while (nuevoCliente.urgencia < 1);
     nuevoCliente.operacionesHechas = 0;
@@ -308,9 +341,11 @@ void menuCiclado(int *contadorTurnos, Nodo **listaClientes){
     int opcion;
 
     do {
+        printf("\n........................\n");
         printf("\n\tMENU\nOpciones disponibles:\n");
         printf("1. Nuevo cliente\n2. Atender cliente\n3. Salir\n");
-        
+        printf("\n........................\n");
+        printf("\nIngrese el numero de opcion deseado: ");
         scanf("%d", &opcion);
         switch (opcion) {
             case 1:
@@ -325,7 +360,11 @@ void menuCiclado(int *contadorTurnos, Nodo **listaClientes){
                 // Guardar los datos de la lista en un archivo binario
                 guardarListaEnArchivoBinario(*listaClientes, contadorTurnos);
                 liberarLista(*listaClientes);
+                printf("........................\n");
                 printf("Saliendo del programa...\n");
+                printf("...\n");
+                printf("..\n");
+                printf(".\n");
                 break;
             default:
                 printf("Opcion no valida. Por favor, seleccione nuevamente.\n");
